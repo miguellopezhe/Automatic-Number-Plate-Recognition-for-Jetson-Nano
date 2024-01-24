@@ -9,7 +9,39 @@ import cv2
 import numpy as np
 import requests
 from datetime import datetime
+import csv
 
+def escribirCsv(plate_number, ahora_formato):
+
+    # Datos que deseas agregar al archivo CSV
+    nueva_linea = [plate_number, ahora_formato]
+
+    # Nombre del archivo CSV
+    nombre_archivo = '/home/nvidia/csv/matriculas.csv'
+
+    # Abrir el archivo en modo 'a+' para agregar líneas al final y crearlo si no existe
+    with open(nombre_archivo, mode='a+', newline='') as archivo_csv:
+        # Crear un objeto escritor CSV
+        escritor_csv = csv.writer(archivo_csv)
+
+        # Si el archivo está vacío, agregar encabezados
+        if archivo_csv.tell() == 0:
+            escritor_csv.writerow(['MATRICULA', 'HORA_ACTUAL'])
+
+        # Escribir la nueva línea en el archivo
+        escritor_csv.writerow(nueva_linea)
+
+def llamadaApi(ruta_imagen):
+    regions = ['in']
+    # Proporciona la ruta de la imagen
+    with open(ruta_imagen, 'rb') as fp:
+        response = requests.post(
+                    'https://api.platerecognizer.com/v1/plate-reader/',
+                    data=dict(regions=regions),
+                    files=dict(upload=fp),
+                    headers={'Authorization': 'Token 56734631c4cfc85b8be7ecd9a98a9ac404fd2450'})
+    
+    return response.json()['results'][0]['plate']
 
 # Parsea los argumentos de línea de comandos
 analizador_argumentos = argparse.ArgumentParser()
@@ -28,17 +60,11 @@ captura_video = cv2.VideoCapture(argumentos.input)
 # Inicializa la salida de video para el seguimiento de objetos
 salida_video = jetson_utils.videoOutput("file://2out/track.mp4", ["--output-codec=h265", "--bitrate=1500000"])
 
-# Configura la fuente CUDA para añadir texto a las imágenes
-fuente_cuda = jetson_utils.cudaFont(size=20)
-
 # Inicializa el rastreador de centroides
-rastreador_centroides = CentroidTracker(maxDisappeared=250, maxDistance=250)
+rastreador_centroides = CentroidTracker(maxDistance=250)
 
 # Lista para almacenar los IDs de los objetos detectados
 ids_objetos = []
-
-# Obtiene la dirección MAC de la interfaz de red para usar como identificador único
-id_unico = hex(uuid.getnode())
 
 # Conjunto para almacenar los IDs de objetos detectados
 ids_detectados = set()
@@ -111,50 +137,13 @@ while captura_video.isOpened():
             # Guarda la imagen en el directorio especificado
             #jetson_utils.saveImage(str(directorio_imagenes + ahora_formato + "_ID" + str(id_objeto) + ".jpg"), img_cuda)
             cv2.imwrite(ruta_imagen, frame2)
-            print("IMAGEN GUARDADA")
 
-            regions = ['in']
-            # Proporciona la ruta de la imagen
-            with open(ruta_imagen, 'rb') as fp:
-                response = requests.post(
-                    'https://api.platerecognizer.com/v1/plate-reader/',
-                    data=dict(regions=regions),
-                    files=dict(upload=fp),
-                    headers={'Authorization': 'Token 56734631c4cfc85b8be7ecd9a98a9ac404fd2450'})
-
-            # Imprime el número de matrícula
             try:
-                plate_number = response.json()['results'][0]['plate']
+                plate_number = llamadaApi(ruta_imagen)
                 print("Número de matrícula: " + plate_number.upper())
-
-                # Datos que deseas agregar al archivo CSV
-                nueva_linea = [plate_number, ahora_formato]
-
-                # Nombre del archivo CSV
-                nombre_archivo = '/home/nvidia/csv/matriculas.csv'
-
-                # Abrir el archivo en modo 'a+' para agregar líneas al final y crearlo si no existe
-                with open(nombre_archivo, mode='a+', newline='') as archivo_csv:
-                    # Crear un objeto escritor CSV
-                    escritor_csv = csv.writer(archivo_csv)
-
-                    # Si el archivo está vacío, agregar encabezados
-                    if archivo_csv.tell() == 0:
-                        escritor_csv.writerow(['MATRICULA', 'HORA_ACTUAL'])
-
-                    # Escribir la nueva línea en el archivo
-                    escritor_csv.writerow(nueva_linea)
+                escribirCsv(plate_number, ahora_formato)
             except:
                 print("")
-
-            # marca = response.json()['results'][0]['vehicle']['type']
-            
-            # print("Marca: " + marca.upper())
-
-            import csv
-
-            
-
 
             # Almacena el ID del objeto capturado
             ids_objetos.append(id_objeto)
@@ -168,3 +157,4 @@ while captura_video.isOpened():
 # Libera los recursos cuando se ha procesado completamente el video
 captura_video.release()
 salida_video.Close()
+
