@@ -1,4 +1,4 @@
-# Automatic number plate recognition for Jetson Nano
+# Automatic Number Plate Recognition for Jetson Nano
 
 Jetson Nano SDK4.5
 
@@ -9,9 +9,7 @@ Luego, utilizaremos otro modelo de IA llamado OpenALPR a través de una API para
 ## Tabla de Contenidos
 
 - [Instalación](#instalación)
-- [Uso](#uso)
-- [Contribución](#contribución)
-- [Licencia](#licencia)
+- [Ejecución](#Ejecución)
 
 ## Instalación
 
@@ -20,7 +18,7 @@ Pasos para instalar el proyecto y todas las dependencias necesarias.
 ```bash
 npm install
 
-## Instalación
+## Ejecución
 
 ```bash
 python3 modelo.py -i /dev/video0
