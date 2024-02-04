@@ -21,5 +21,3 @@ pip install -r requirements.py
 ```bash
 python3 modelo.py -i /dev/video0
 python3 modelo.py -i /ruta/video.mp4
-
-
