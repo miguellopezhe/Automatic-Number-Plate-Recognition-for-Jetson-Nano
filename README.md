@@ -15,10 +15,11 @@ Luego, utilizaremos otro modelo de IA llamado OpenALPR a través de una API para
 Pasos para instalar el proyecto y todas las dependencias necesarias.
 
 ```bash
-pip install -r requirements.py
+pip install -r requirements.txt
 ```
 
 ## Ejecución
+Para ejecutar el modelo, puedes especificar la cámara con la opción -i o proporcionar la ruta de un archivo de video.
 
 ```bash
 python3 modelo.py -i /dev/video0
