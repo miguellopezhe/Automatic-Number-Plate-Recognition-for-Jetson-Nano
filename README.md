@@ -14,7 +14,7 @@ Luego, utilizaremos otro modelo de IA llamado OpenALPR a través de una API para
 ## Instalación
 Pasos para instalar el proyecto y todas las dependencias necesarias.
 
-1. Primer paso: Instalación del Modelo Nvidia SSD-Mobilenet-v2
+**1. Primer paso: Instalación del Modelo Nvidia SSD-Mobilenet-v2**
    
 Antes de clonar el repositorio, asegúrese de que el sistema esté actualizado y que las siguientes dependencias estén instaladas: git, cmake, libpython3-dev y python3-numpy.
 ```bash
@@ -49,7 +49,7 @@ sudo ldconfig
 
 Con esto, ya tendríamos las bibliotecas necesarias y el modelo instalado, listos para continuar con el proyecto.
 
-2. Segundo paso: Instalación de OpenCV 4.5.0
+**2. Segundo paso: Instalación de OpenCV 4.5.0**
    
 Utilizaremos OpenCV para el procesamiento de imágenes de la cámara, ya que, proporciona una amplia gama de funciones y herramientas que facilitan el procesamiento de imágenes en tiempo real desde una cámara. 
 Para ello, clonamos el repositorio de OpenCV 4.5.0:
