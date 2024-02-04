@@ -12,14 +12,14 @@ Luego, utilizaremos otro modelo de IA llamado OpenALPR a través de una API para
 - [Ejecución](#Ejecución)
 
 ## Instalación
-
 Pasos para instalar el proyecto y todas las dependencias necesarias.
 
-```bash
-npm install
+pip install -r requirements.py
 
 ## Ejecución
 
 ```bash
 python3 modelo.py -i /dev/video0
 python3 modelo.py -i /ruta/video.mp4
+
+
