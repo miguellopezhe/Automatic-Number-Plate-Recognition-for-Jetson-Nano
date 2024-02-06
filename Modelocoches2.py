@@ -10,6 +10,7 @@ import numpy as np
 import requests
 from datetime import datetime
 import csv
+#import mysql.connector
 
 def escribirCsv(plate_number, ahora_formato):
 
@@ -43,13 +44,42 @@ def llamadaApi(ruta_imagen):
     
     return response.json()['results'][0]['plate']
 
+def conexionMYSQL(mimatricula, mifecha):
+     
+    # Conectar a la base de datos
+    conexion = mysql.connector.connect(
+        host="192.168.106.176",
+        user="root",
+        password="Admin123",
+        database="proyecto_ia"
+    )
+
+    cursor = conexion.cursor()
+
+    # Datos a insertar
+    matricula = mimatricula.upper()
+    fecha = mifecha
+
+    # Consulta SQL para insertar datos
+    sql = "INSERT INTO entrada (matricula, fecha) VALUES (%s, %s)"
+    valores = (matricula, fecha)
+
+    # Ejecutar la consulta
+    cursor.execute(sql, valores)
+    print("Datos introducidos correctamente.")
+    # Confirmar los cambios
+    conexion.commit()
+
+    # Cerrar la conexión
+    conexion.close()
+
 # Parsea los argumentos de línea de comandos
 analizador_argumentos = argparse.ArgumentParser()
 analizador_argumentos.add_argument('-i', '--input', type=str, required=True, help='Ruta al archivo de video')
 argumentos = analizador_argumentos.parse_args()
 
 # Directorio para guardar las imágenes capturadas
-directorio_imagenes = ('/home/nvidia/1snap/')
+directorio_imagenes = '/home/nvidia/1snap'
 
 # Configura la red de detección de objetos con el modelo "ssd-mobilenet-v2"
 red_deteccion = jetson_inference.detectNet("ssd-mobilenet-v2", threshold=0.94)
@@ -142,6 +172,8 @@ while captura_video.isOpened():
                 plate_number = llamadaApi(ruta_imagen)
                 print("Número de matrícula: " + plate_number.upper())
                 escribirCsv(plate_number, ahora_formato)
+                #conexionMYSQL(plate_number, ahora_formato)
+               
             except:
                 print("")
 
