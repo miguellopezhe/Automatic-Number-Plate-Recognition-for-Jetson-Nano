@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consulta de Matrícula</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f0f0;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      animation: fadeIn 1s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      margin-bottom: 20px;
+    }
+
+    label {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    input {
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      animation: pulse 1s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      from {
+        transform: scale(1);
+      }
+
+      to {
+        transform: scale(1.1);
+      }
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #resultados {
+      height: 10%;
+      background-color: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      overflow-y: auto;
+      animation: bounceIn 1s ease-in-out;
+    }
+
+    @keyframes bounceIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .card {
+      width: 300px;
+      margin: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s;
+      animation: slideInRight 1s ease-in-out;
+    }
+
+    @keyframes slideInRight {
+      from {
+        transform: translateX(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .card:hover {
+      transform: scale(1.05);
+    }
+
+    .card-body {
+      padding: 15px;
+    }
+
+    .card-title {
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .card-text {
+      margin-bottom: 5px;
+      font-size: 14px;
+    }
+
+    canvas {
+      display: block;
+      margin: 20px auto;
+    }
+
+    .list-container {
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+
+    <!-- Formulario para consultar vehículos por matrícula -->
+    <form onsubmit="event.preventDefault();" method="GET">
+      <label for="matricula">Matrícula:</label>
+      <input type="search" name="matricula" id="matricula">
+      <input type="button" value="Consultar Matricula" id="submit" onclick="comprobar()">
+      <input type="button" value="Información Actividad" id="submit" onclick="comprobar_todas()">
+      <input type="button" value="Consultar datos de vehiculos guardados"
+        onclick="comprobar_todos_los_datos_de_los_vehiculos_guardados()">
+    </form>
+
+    <!-- Contenedor para resultados y gráficos -->
+    <div class="scroll-container">
+      <div id="resultados" class="list-container"></div>
+      <div id="resultados2" class="list-container"></div>
+      <div id="resultados3" class="list-container"></div>
+      <canvas id="myBarChart2" width="400" height="400"></canvas>
+    </div>
+
+    <!-- Contenedor para gráficos de barras y pie -->
+    <div class="chart-container" id="barChartContainer">
+      <canvas id="myBarChart" width="400" height="400"></canvas>
+      <canvas id="myPieChartMatricula" width="400" height="400"></canvas>
+    </div>
+
+    <!-- Contenedor para mostrar el conteo de matrículas -->
+    <div id="matriculaCount"></div>
+
+    <!-- Script para incluir la librería Chart.js y código JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+
+      // Funciones para limpiar resultados, mostrar/ocultar gráficos y consultar datos
+      function limpiarResultados() {
+        document.getElementById("resultados").innerHTML = "";
+        document.getElementById("resultados2").innerHTML = "";
+        document.getElementById("resultados3").innerHTML = "";
+      }
+      function mostrarGraficos() {
+        document.getElementById('barChartContainer').style.display = 'block';
+        document.getElementById('myBarChart2').style.display = 'block';
+      }
+      function mostrarGraficos2(){
+        document.getElementById('myBarChart2').style.display = 'block';
+      }
+      function ocultarGraficos2(){
+        document.getElementById('myBarChart2').style.display = 'none';
+      }
+      function ocultarGraficos() {
+        document.getElementById('barChartContainer').style.display = 'none';
+
+      }
+
+      // Función para consultar información por matrícula
+      function comprobar() {
+
+        limpiarResultados();
+        var matricula = document.getElementById("matricula").value;
+        var xhr = new XMLHttpRequest();
+        var xhr2 = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState == 4 && xhr.status == 200) {
+            var array = JSON.parse(xhr.responseText);
+            var container = document.createElement("div"); // Nuevo contenedor
+            for (var i = 0; i < array.length; i++) {
+              var card = document.createElement("div");
+              card.className = "card";
+              card.innerHTML = `<div class="card-body">
+                                    <h2 class="card-title" id="matricula">Matrícula: ${array[i].matricula}</h2>
+                                  </div>
+                                  <div class="card-body">
+                                    <h2 class="card-title" id="marca">Marca: ${array[i].marca}</h2>
+                                    <h2 class="card-title" id="modelo">Modelo: ${array[i].modelo}</h2>
+                                    <h2 class="card-title" id="color">Color: ${array[i].color}</h2>
+                                    <h2 class="card-text" id="anio_fabricacion">Año de Fabricación: ${array[i].anio_fabricacion}</h2>
+                                    <h2 class="card-text" id="etiqueta">Etiqueta: ${array[i].etiqueta}</h2>
+                                    <h2 class="card-text" id="nombre_propietario">Propietario: ${array[i].nombre_propietario}</h2>
+                                    <h2 class="card-text" id="apellido_propietario">Apellido: ${array[i].apellido_propietario}</h2>
+
+                                  </div>`;
+              container.appendChild(card);
+            }
+            document.getElementById("resultados").appendChild(container); // Agregar el contenedor al resultado
+
+          }
+        };
+        xhr2.onreadystatechange = function () {
+          if (xhr2.readyState == 4 && xhr2.status == 200) {
+            var array2 = JSON.parse(xhr2.responseText);
+            var container2 = document.createElement("div"); // Nuevo contenedor
+            for (var i = 0; i < array2.length; i++) {
+              var card2 = document.createElement("div");
+              card2.className = "card";
+              card2.innerHTML = `<div class="card-body">
+                                    <h2 class="card-title" id="matricula">Matrícula: ${array2[i].matricula}</h2>
+                                  </div>
+                                  <div class="card-body">
+                                    <h2 class="card-title" id="fecha">Fecha y Hora: ${array2[i].fecha_hora}</h2>
+                                  </div>
+                                  <div class="card-body">
+                                    <h2 class="card-title" id="Coeficiente">Coeficiente: ${array2[i].coeficiente}</h2>
+                                  </div>`;
+              container2.appendChild(card2);
+            }
+            document.getElementById("resultados2").appendChild(container2); // Agregar el contenedor al resultado
+          }
+        };
+        xhr.open("GET", "selectmatricula.php?matricula=" + matricula, true);
+        xhr.send();
+        xhr2.open("GET", "selectentrada.php?matricula=" + matricula, true);
+        xhr2.send();
+
+        ocultarGraficos();
+        ocultarGraficos2();
+      }
+
+      // Funciones para consultar información de vehículos y actividades guardadas
+      function comprobar_todos_los_datos_de_los_vehiculos_guardados() {
+        limpiarResultados();
+        ocultarGraficos();
+        mostrarGraficos2();
+        var xhr4 = new XMLHttpRequest();
+        xhr4.onreadystatechange = function () {
+          if (xhr4.readyState == 4 && xhr4.status == 200) {
+            var array4 = JSON.parse(xhr4.responseText);
+            var container4 = document.createElement("div"); // Nuevo contenedor
+            for (var i = 0; i < array4.length; i++) {
+              var card4 = document.createElement("div");
+              card4.className = "card";
+              card4.innerHTML = `<div class="card-body">
+                                        <h2 class="card-title" id="matricula">Matrícula: ${array4[i].matricula}</h2>
+                                    </div>
+                                    <div class="card-body">
+                                        <h2 class="card-title" id="marca">Marca: ${array4[i].marca}</h2>
+                                        <h2 class="card-title" id="modelo">Modelo: ${array4[i].modelo}</h2>
+                                        <h2 class="card-title" id="color">Color: ${array4[i].color}</h2>
+                                        <h2 class="card-text" id="anio_fabricacion">Año de Fabricación: ${array4[i].anio_fabricacion}</h2>
+                                        <h2 class="card-text" id="etiqueta">Etiqueta: ${array4[i].etiqueta}</h2>
+                                        <h2 class="card-text" id="nombre_propietario">Propietario: ${array4[i].nombre_propietario}</h2>
+                                        <h2 class="card-text" id="apellido_propietario">Apellido: ${array4[i].apellido_propietario}</h2>
+                                    </div>`;
+              container4.appendChild(card4); // <-- Corregir aquí
+            }
+            document.getElementById("resultados3").appendChild(container4); // Agregar el contenedor al resultado
+            var Etiquetas = array4.map(function (entry) {
+              return entry.etiqueta.split(' ')[0]; // Obtener solo la fecha (sin la hora)
+            });
+
+            // Crear un objeto para contar la frecuencia de cada fecha
+            var etiqueta = {};
+            Etiquetas.forEach(function (fecha) {
+              etiqueta[fecha] = (etiqueta[fecha] || 0) + 1;
+            });
+
+            // Extraer las etiquetas y los datos para el gráfico de barras
+            var labels = Object.keys(etiqueta);
+            var data = Object.values(etiqueta);
+            console.log(labels, data);
+
+            // Actualizar el gráfico de barras
+            updateBarChart2(labels, data);
+          }
+        }
+
+        xhr4.open("GET", "selectdatosguardados.php", true);
+        xhr4.send();
+      }
+      function comprobar_todas() {
+        limpiarResultados();
+        mostrarGraficos();
+        ocultarGraficos2();
+        var xhr3 = new XMLHttpRequest();
+
+        xhr3.onreadystatechange = function () {
+          if (xhr3.readyState == 4 && xhr3.status == 200) {
+            var array3 = JSON.parse(xhr3.responseText);
+            var container3 = document.createElement("div"); // Nuevo contenedor
+            for (var i = 0; i < array3.length; i++) {
+              var card3 = document.createElement("div");
+              card3.className = "card";
+              card3.innerHTML = `<div class="card-body">
+                                    <h2 class="card-title" id="matricula">Matrícula: ${array3[i].matricula}</h2>
+                                  </div>
+                                  <div class="card-body">
+                                    <h2 class="card-text" id="fecha_hora">Fecha y Hora: ${array3[i].fecha_hora}</h2>
+                                  </div>
+                                  <div class="card-body">
+                                    <h2 class="card-text" id="coeficiente">Coeficiente: ${array3[i].coeficiente}</h2>
+                                  </div>`;
+
+              container3.appendChild(card3);
+            }
+            document.getElementById("resultados").appendChild(container3); // Agregar el contenedor al resultado
+
+            // Obtener datos para el gráfico de barras
+            var fechasHora = array3.map(function (entry) {
+              return entry.fecha_hora.split(' ')[0]; // Obtener solo la fecha (sin la hora)
+            });
+
+            // Crear un objeto para contar la frecuencia de cada fecha
+            var fechaFrecuencia = {};
+            fechasHora.forEach(function (fecha) {
+              fechaFrecuencia[fecha] = (fechaFrecuencia[fecha] || 0) + 1;
+            });
+
+            // Extraer las etiquetas y los datos para el gráfico de barras
+            var labels = Object.keys(fechaFrecuencia);
+            var data = Object.values(fechaFrecuencia);
+
+            // Actualizar el gráfico de barras
+            updateBarChart(labels, data);
+
+            var matriculaFrecuencia = {};
+            array3.forEach(function (entry) {
+              matriculaFrecuencia[entry.matricula] = (matriculaFrecuencia[entry.matricula] || 0) + 1;
+            });
+
+            var matriculaLabels = Object.keys(matriculaFrecuencia);
+            var matriculaData = Object.values(matriculaFrecuencia);
+
+            updatePieChartMatricula(matriculaLabels, matriculaData);
+            mostrarConteoMatricula(matriculaFrecuencia);
+          }
+        };
+
+        xhr3.open("GET", "selecttodo.php", true);
+        xhr3.send();
+      }
+
+      // Funciones para actualizar gráficos de barras y pie
+      function updateBarChart(labels, data) {
+        var ctx = document.getElementById('myBarChart').getContext('2d');
+        var myBarChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Cantidad de Vehículos',
+              data: data,
+              backgroundColor:'orange',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            },
+            title: {
+              display: true,
+              text: 'Cantidad de Vehículos por Día'
+            }
+          }
+        });
+      }
+      function updateBarChart2(labels, data) {
+        var ctx = document.getElementById('myBarChart2').getContext('2d');
+        var myBarChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: 'Etiquetas',
+              data: data,
+              backgroundColor: getRandomColorArray(data.length),
+              borderWidth: 1
+            }]
+          },
+          options: {
+            scales: {
+              y: {
+                beginAtZero: true
+              }
+            },
+            title: {
+              display: true,
+              text: 'Cantidad de Vehículos por Día'
+            }
+          }
+        });
+      }
+      function updatePieChartMatricula(labels, data) {
+        var ctx = document.getElementById('myPieChartMatricula').getContext('2d');
+        var myPieChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels,
+            datasets: [{
+              data: data,
+              backgroundColor: getRandomColorArray(data.length)
+            }]
+          },
+          options: {
+            title: {
+              display: true,
+              text: 'Cantidad de Entradas por Matrícula'
+            }
+          }
+        });
+      }
+
+      // Funciones para generar colores aleatorios
+      function getRandomColorArray(length) {
+        var colors = [];
+        for (var i = 0; i < length; i++) {
+          colors.push(getRandomColor());
+        }
+        return colors;
+      }
+
+      function getRandomColor() {
+        var letters = '0123456789ABCDEF';
+        var color = '#';
+        for (var i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+      }
+    </script>
+  </main>
+</body>
+
+</html>
