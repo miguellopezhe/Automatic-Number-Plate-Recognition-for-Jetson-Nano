@@ -74,7 +74,7 @@ La instalación de mysql-connector-python es necesario para poder establecer la 
 ```bash
 pip install mysql-connector-python
 ```
-*Nota:* En la funcion de Conexion, cambiar los parametros para vuestra base de datos
+**Nota:** En la funcion de conexionMYSQL, cambiar los parametros para vuestra base de datos
 
 ## Ejecución
 Para ejecutar el modelo, puedes especificar la cámara con la opción -i o proporcionar la ruta de un archivo de video.
