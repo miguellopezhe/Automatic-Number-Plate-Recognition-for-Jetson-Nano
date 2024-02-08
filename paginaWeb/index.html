@@ -213,13 +213,13 @@
       // Función para consultar información por matrícula
       function comprobar() {
 
-        limpiarResultados();
-        var matricula = document.getElementById("matricula").value;
-        var xhr = new XMLHttpRequest();
+        limpiarResultados(); //llamada a la función de limpiarResultados
+        var matricula = document.getElementById("matricula").value; //Recoge el valor de la matricula
+        var xhr = new XMLHttpRequest(); //Llamada para realizar una petición de AJAX
         var xhr2 = new XMLHttpRequest();
-        xhr.onreadystatechange = function () {
-          if (xhr.readyState == 4 && xhr.status == 200) {
-            var array = JSON.parse(xhr.responseText);
+        xhr.onreadystatechange = function () { //Preparada de la funcion
+          if (xhr.readyState == 4 && xhr.status == 200) { //Comprobación del estado de la petición web
+            var array = JSON.parse(xhr.responseText); //Guardar en una variable la respuesta del servidor
             var container = document.createElement("div"); // Nuevo contenedor
             for (var i = 0; i < array.length; i++) {
               var card = document.createElement("div");
@@ -236,7 +236,7 @@
                                     <h2 class="card-text" id="nombre_propietario">Propietario: ${array[i].nombre_propietario}</h2>
                                     <h2 class="card-text" id="apellido_propietario">Apellido: ${array[i].apellido_propietario}</h2>
 
-                                  </div>`;
+                                  </div>`; //Creación de las etiquetas H2 en el html con la respuesta de nuestra petición en base a la matricula que hemos ingresado
               container.appendChild(card);
             }
             document.getElementById("resultados").appendChild(container); // Agregar el contenedor al resultado
@@ -264,11 +264,11 @@
             document.getElementById("resultados2").appendChild(container2); // Agregar el contenedor al resultado
           }
         };
-        xhr.open("GET", "selectmatricula.php?matricula=" + matricula, true);
+        xhr.open("GET", "selectmatricula.php?matricula=" + matricula, true); //Llamada al fichero selectmatricula.php recogiendo el valor de la matricula que hemos ingresado en el campo <-- En este php esta comentado todo para entenderlo facil los otros hacen mas de lo mismo
         xhr.send();
         xhr2.open("GET", "selectentrada.php?matricula=" + matricula, true);
         xhr2.send();
-
+        //Llamada a las funciones ocultarGraficos() y ocultarGraficos2()
         ocultarGraficos();
         ocultarGraficos2();
       }
@@ -301,7 +301,7 @@
               container4.appendChild(card4); // <-- Corregir aquí
             }
             document.getElementById("resultados3").appendChild(container4); // Agregar el contenedor al resultado
-            var Etiquetas = array4.map(function (entry) {
+            var Etiquetas = array4.map(function (entry) { //Recogida de la informacion que viene en el campo etiqueta para su posterior creación de los graficos necesarios
               return entry.etiqueta.split(' ')[0]; // Obtener solo la fecha (sin la hora)
             });
 
