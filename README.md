@@ -67,6 +67,15 @@ cd JEP/script
 
 Una vez completada la instalación, OpenCV 4.5.0 estará disponible en el sistema y listo para su uso en el proyecto.
 
+**2. Tercer paso: Instalación y Conexion de  mysql-connector-python**
+
+La instalación de mysql-connector-python es necesario para poder establecer la conexión y realizar operaciones con una base de datos MySQL desde el programa Python.
+
+```bash
+pip install mysql-connector-python
+```
+*Nota:* En la funcion de Conexion, cambiar los parametros para vuestra base de datos
+
 ## Ejecución
 Para ejecutar el modelo, puedes especificar la cámara con la opción -i o proporcionar la ruta de un archivo de video.
 
