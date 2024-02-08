@@ -67,7 +67,7 @@ cd JEP/script
 
 Una vez completada la instalación, OpenCV 4.5.0 estará disponible en el sistema y listo para su uso en el proyecto.
 
-**2. Tercer paso: Instalación y Conexion de  mysql-connector-python**
+**2. Tercer paso: Instalación y Conexion de  Mysql-connector-python**
 
 La instalación de mysql-connector-python es necesario para poder establecer la conexión y realizar operaciones con una base de datos MySQL desde el programa Python.
 
