@@ -12,10 +12,11 @@ from datetime import datetime
 import csv
 import mysql.connector
 
-def escribirCsv(plate_number, ahora_formato):
+def escribirCsv(plate_number, ahora_formato, score):
 
+    miscore = score * 100
     # Datos que deseas agregar al archivo CSV
-    nueva_linea = [plate_number, ahora_formato]
+    nueva_linea = [plate_number, ahora_formato,miscore]
 
     # Nombre del archivo CSV
     nombre_archivo = '/home/nvidia/csv/matriculas.csv'
@@ -27,25 +28,14 @@ def escribirCsv(plate_number, ahora_formato):
 
         # Si el archivo está vacío, agregar encabezados
         if archivo_csv.tell() == 0:
-            escritor_csv.writerow(['MATRICULA', 'HORA_ACTUAL'])
+            escritor_csv.writerow(['MATRICULA', 'HORA_ACTUAL', 'SCORE'])
 
         # Escribir la nueva línea en el archivo
         escritor_csv.writerow(nueva_linea)
 
-def llamadaApi(ruta_imagen):
-    regions = ['in']
-    # Proporciona la ruta de la imagen
-    with open(ruta_imagen, 'rb') as fp:
-        response = requests.post(
-                    'https://api.platerecognizer.com/v1/plate-reader/',
-                    data=dict(regions=regions),
-                    files=dict(upload=fp),
-                    headers={'Authorization': 'Token 56734631c4cfc85b8be7ecd9a98a9ac404fd2450'})
-    
-    return response.json()['results'][0]['plate']
-
-def conexionMYSQL(mimatricula, mifecha):
-    
+def conexionMYSQL(mimatricula, mifecha, score):
+     
+    miscore = score * 100
     # Conectar a la base de datos
     conexion = mysql.connector.connect(
         host="192.168.106.176",
@@ -67,12 +57,12 @@ def conexionMYSQL(mimatricula, mifecha):
     fecha = mifecha
 
     # Consulta SQL para insertar datos
-    sql = "INSERT INTO entrada (matricula, fecha_hora) VALUES (%s, %s)"
-    valores = (matricula, fecha)
+    sql = "INSERT INTO entrada (matricula, fecha_hora, coeficiente) VALUES (%s, %s, %s)"
+    valores = (matricula, fecha, miscore)
 
     # Ejecutar la consulta
     cursor.execute(sql, valores)
-    print("Datos introducidos correctamente: " + matricula + " a las " + fecha)
+    print("Datos introducidos correctamente.")
     # Confirmar los cambios
     conexion.commit()
 
@@ -171,13 +161,24 @@ while captura_video.isOpened():
             ruta_imagen = str(directorio_imagenes + ahora_formato + "_ID" + str(id_objeto) + ".jpg")
 
             # Guarda la imagen en el directorio especificado
+            #jetson_utils.saveImage(str(directorio_imagenes + ahora_formato + "_ID" + str(id_objeto) + ".jpg"), img_cuda)
             cv2.imwrite(ruta_imagen, frame2)
 
             try:
-                plate_number = llamadaApi(ruta_imagen)
+                regions = ['in']
+                # Proporciona la ruta de la imagen
+                with open(ruta_imagen, 'rb') as fp:
+                    response = requests.post(
+                    'https://api.platerecognizer.com/v1/plate-reader/',
+                    data=dict(regions=regions),
+                    files=dict(upload=fp),
+                    headers={'Authorization': 'Token 56734631c4cfc85b8be7ecd9a98a9ac404fd2450'})
+    
+                score = response.json()['results'][0]['score']
+                plate_number = response.json()['results'][0]['plate']
                 print("Número de matrícula: " + plate_number.upper())
-                escribirCsv(plate_number, ahora_formato)
-                conexionMYSQL(plate_number, ahora_formato)
+                escribirCsv(plate_number, ahora_formato, score)
+                conexionMYSQL(plate_number, ahora_formato, score)
                
             except:
                 print("")
