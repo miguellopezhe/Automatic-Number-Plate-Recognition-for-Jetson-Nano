@@ -2,9 +2,14 @@
 
 Jetson Nano SDK4.5
 
-El objetivo del proyecto es crear un sistema automatizado de lectura de matrículas para la entrada de un parking en un Jetson Nano.
-Utilizaremos un modelo de IA llamado Nvidia SSD-Mobilenet-v2 para reconocer cada vez que entre un coche al parking, permitiendo el seguimiento de cada vehículo. Cuando se detecte un vehículo, se tomará una fotografía del mismo. 
-Luego, utilizaremos otro modelo de IA llamado OpenALPR a través de una API para procesar la fotografía y extraer el texto de la matrícula del vehículo.
+El propósito principal es desarrollar un sistema automatizado de reconocimiento de matrículas utilizando un Jetson Nano, destinado a ser instalado en la entrada de un parking.
+
+Para este fin, hemos seleccionado un modelo pre-entrenado de inteligencia artificial conocido como Nvidia SSD-Mobilenet-v2. Este modelo tiene la capacidad de reconocer coches cada vez que ingresan o salen del estacionamiento, capturando una imagen de cada uno en el proceso.
+
+Para procesar estas imágenes y extraer el texto de las matrículas de los coches, empleamos otro modelo pre-entrenado de inteligencia artificial llamado OpenALPR a través de una API.
+
+Una vez obtenida la matrícula, nuestro código guarda la fecha, hora, matrícula y el coeficiente de confianza asociado a cada lectura en una base de datos MySQL y en un archivo CSV.
+
 
 ## Tabla de Contenidos
 
